@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Install the go package
-        run: sudo apt-get install go
+        run: snap install go
 
       - name: Deploy the site
         uses: benmatselby/hugo-deploy-gh-pages@main
