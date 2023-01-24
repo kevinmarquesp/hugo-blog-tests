@@ -12,6 +12,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v1
 
+      - name: Install the go package
+        run: apt-get install go
+
       - name: Deploy the site
         uses: benmatselby/hugo-deploy-gh-pages@main
         env:
