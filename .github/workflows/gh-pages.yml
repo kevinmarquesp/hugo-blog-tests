@@ -1,30 +1,34 @@
-name: Push to GitHub Pages on push to main
+name: GitHub Pages
+
 on:
   push:
     branches:
-      - main
+      - main  # Set a branch to deploy
+  pull_request:
 
 jobs:
-  build:
-    name: Deploy
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-22.04
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v1
-
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v3
         with:
-          go-version: '^1.13.1' # The Go version to download (if necessary) and use.
+          submodules: true  # Fetch Hugo themes (true OR recursive)
+          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
-      - name: Testing the go package
-        run: go version
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.91.2'
+          # extended: true
 
-      - name: Deploy the site
-        uses: benmatselby/hugo-deploy-gh-pages@main
-        env:
-          HUGO_VERSION: 0.88.0
-          TARGET_REPO: benmatselby/benmatselby.github.io
-          TARGET_BRANCH: main
-          TOKEN: ${{ secrets.TOKEN }}
-          HUGO_ARGS: '-t academic'
-          CNAME: benmatselby.github.io
+      - name: Build
+        run: hugo --minify
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
